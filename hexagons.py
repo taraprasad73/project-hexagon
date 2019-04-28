@@ -3,6 +3,12 @@ import networkx as nx
 import matplotlib.pyplot as plt
 import argparse
 import math
+import os
+
+if not os.path.exists('data'):
+    os.makedirs('data')
+
+HEXAGON_IMAGE_FILE_PATH = 'data/hex.png'
 
 
 class Corner:
@@ -73,6 +79,7 @@ def createGraph():
         hexagon.addPoints(points)
     return hexGraph, verticesDict
 
+
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(description="Input for the hexagons")
     parser.add_argument("n", type=int, help="total number of layers")
@@ -89,4 +96,4 @@ if __name__ == "__main__":
 
     pos = nx.get_node_attributes(hexGraph, 'pos')
     nx.draw(hexGraph, pos=pos, node_size=1)
-    plt.savefig('hex.png', dpi=600)
+    plt.savefig(HEXAGON_IMAGE_FILE_PATH, dpi=600)
