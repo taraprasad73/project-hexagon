@@ -18,10 +18,10 @@
 - create a virtual environment
   - virtualenv -p /usr/bin/python2.7 hexagons
   - source hexagons/bin/activate
+  - pip install -r requirements.txt
 
 ## Running the code
 ```
-pip install -r requirements.txt
 python hexagons.py 3 10
 
 Use python heaxagons.py --help to see the argparse help.
