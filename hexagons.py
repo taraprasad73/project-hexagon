@@ -21,7 +21,7 @@ class Hexagon:
 
 
 # Works till layer = 3
-def generateHexagons(numLayers, numHexagons, radius):
+def generateHexagonCenters(numLayers, numHexagons, radius):
     hexagons = []
     hexagonCountReached = False
     for layer in range(numLayers):
@@ -48,21 +48,9 @@ def generateHexagons(numLayers, numHexagons, radius):
     return hexagons
 
 
-if __name__ == "__main__":
-    parser = argparse.ArgumentParser(description="Input for the hexagons")
-    parser.add_argument("n", type=int, help="total number of layers")
-    parser.add_argument("r", type=int, help="radius of hexagon")
-    parser.add_argument("-c", type=int, help="total count of hexagons")
-    args = parser.parse_args()
-
-    numLayers = args.n
-    numHexagons = args.c
-    radius = args.r
-
-    hexagons = generateHexagons(numLayers, numHexagons, radius)
-
-    verticesDict = {}
+def createGraph():
     hexGraph = nx.Graph()
+    verticesDict = {}
     for hexagon in hexagons:
         center = hexagon.center
         points = []
@@ -83,6 +71,21 @@ if __name__ == "__main__":
             hexGraph.add_edge(points[(i + 1) % 6], points[i])
 
         hexagon.addPoints(points)
+    return hexGraph, verticesDict
+
+if __name__ == "__main__":
+    parser = argparse.ArgumentParser(description="Input for the hexagons")
+    parser.add_argument("n", type=int, help="total number of layers")
+    parser.add_argument("r", type=int, help="radius of hexagon")
+    parser.add_argument("-c", type=int, help="total count of hexagons")
+    args = parser.parse_args()
+
+    numLayers = args.n
+    numHexagons = args.c
+    radius = args.r
+
+    hexagons = generateHexagonCenters(numLayers, numHexagons, radius)
+    hexGraph, verticesDict = createGraph()
 
     pos = nx.get_node_attributes(hexGraph, 'pos')
     nx.draw(hexGraph, pos=pos, node_size=1)
