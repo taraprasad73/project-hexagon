@@ -4,6 +4,7 @@ import matplotlib.pyplot as plt
 import argparse
 import math
 import os
+import random
 
 if not os.path.exists('data'):
     os.makedirs('data')
@@ -36,7 +37,7 @@ def generateHexagonCenters(numLayers, numHexagons, radius):
             hexagon = Hexagon(Corner(0, 0))
             hexagons.append(hexagon)
         else:
-            delta = 360 / (layer * 6)
+            delta = 360 // (layer * 6)
             for theta in range(0, 360, delta):
                 if layer == 2 and (theta - 30) % 60 == 0:
                     x = 3 * radius * math.cos(math.radians(theta))
@@ -54,11 +55,17 @@ def generateHexagonCenters(numLayers, numHexagons, radius):
     return hexagons
 
 
-def createGraph():
+def createGraph(hexagons, radius):
     hexGraph = nx.Graph()
     verticesDict = {}
+    adjList = {}
+    pointParam = {}   # Each point has a certain param, C or I or A
+    params = ['C', 'I', 'A']    # Confidentiality, Integrity and Authenticity
+    edgeWeights = {}    # key is tuple of pair of point tuples
+
     for hexagon in hexagons:
         center = hexagon.center
+        hexWeight = random.randint(1, 5)
         points = []
         for theta in range(30, 360, 60):
             x = round(center.x + radius * math.cos(math.radians(theta)), 2)
@@ -75,9 +82,37 @@ def createGraph():
 
         for i in range(6):
             hexGraph.add_edge(points[(i + 1) % 6], points[i])
+            positionA = (points[i].x, points[i].y)
+            positionB = (points[(i + 1)%6].x, points[(i + 1)%6].y)
+            
+            if edgeWeights.get((positionA, positionB)) is None:
+                if edgeWeights.get((positionB, positionA)) is None:
+                    edgeWeights[(positionA, positionB)] = hexWeight
+                else:
+                    edgeWeights[(positionB, positionA)] += hexWeight
+            else:
+                edgeWeights[(positionA, positionB)] += hexWeight
+
+            if adjList.get(positionA) is None:
+                adjList[positionA] = [(positionB)]
+            elif positionB not in adjList[positionA]:
+                adjList[positionA].append(positionB)
+
+            if adjList.get(positionB) is None:
+                adjList[positionB] = [positionA]
+            elif positionA not in adjList[positionB]:
+                adjList[positionB].append(positionA)
+            
+        i = 0
+        for p in points:
+            p = (p.x, p.y)
+            if pointParam.get(p) is None:
+                pointParam[p] = params[i]
+                i += 1
+                i %= 3
 
         hexagon.addPoints(points)
-    return hexGraph, verticesDict
+    return hexGraph, verticesDict, adjList, pointParam, edgeWeights
 
 
 if __name__ == "__main__":
@@ -92,7 +127,7 @@ if __name__ == "__main__":
     radius = args.r
 
     hexagons = generateHexagonCenters(numLayers, numHexagons, radius)
-    hexGraph, verticesDict = createGraph()
+    hexGraph, verticesDict, *rest = createGraph(hexagons, radius)
 
     pos = nx.get_node_attributes(hexGraph, 'pos')
     nx.draw(hexGraph, pos=pos, node_size=1)
